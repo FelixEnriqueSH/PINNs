@@ -220,7 +220,7 @@ if __name__ == "__main__":
     ub = np.array([10, 5])
 
     N0 = 50
-    N_b = 5
+    N_b = 1
     N_f = 20000
     #    layers = [2, 100, 2]
     layers = [2, 100, 100, 100, 100, 2]
@@ -229,7 +229,7 @@ if __name__ == "__main__":
 
     t = data['t'].flatten()[:, None]
     x = data['x'].flatten()[:, None]
-    Exact = data['Q']
+    Exact = data['q']
     Exact_u = np.real(Exact)
     Exact_v = np.imag(Exact)
     Exact_h = np.sqrt(Exact_u ** 2 + Exact_v ** 2)
