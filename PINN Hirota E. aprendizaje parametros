@@ -200,7 +200,7 @@ if __name__ == "__main__":
 
     t = data['t'].flatten()[:, None]
     x = data['x'].flatten()[:, None]
-    Exact = data['Q']
+    Exact = data['q']
     Exact_alpha = data['a']
     Exact_beta = data['b']
     Exact_u = np.real(Exact)
