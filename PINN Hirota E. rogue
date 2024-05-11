@@ -1,6 +1,6 @@
 import sys
 
-sys.path.insert(0, 'C:\\Users\\fmend\\PycharmProjects\\pythonProject1\\Data')
+sys.path.insert(0, 'C:\\Users\\JELLYFISH\\OneDrive\\Documents\\Data')
 
 import tensorflow.compat.v1 as tf
 
@@ -102,7 +102,7 @@ class PhysicsInformedNN:
         # Optimizers using TensorFlow 2.x
         self.optimizer = dde.optimizers.tensorflow_compat_v1.scipy_optimizer.ScipyOptimizerInterface(
             self.loss, method='L-BFGS-B',
-            options={'maxiter': 50, 'maxfun': 50, 'maxcor': 50, 'maxls': 50, 'ftol': 1.0 * np.finfo(float).eps})
+            options={'maxiter': 5000, 'maxfun': 5000, 'maxcor': 50, 'maxls': 50, 'ftol': 1.0 * np.finfo(float).eps})
 
         #########################################################
         self.optimizer_Adam = tf.train.AdamOptimizer()
@@ -219,13 +219,13 @@ if __name__ == "__main__":
     lb = np.array([-2.5, -.5])
     ub = np.array([2.5, .5])
 
-    N0 = 50
-    N_b = 50
+    N0 = 100
+    N_b = 100
     N_f = 20000
     #    layers = [2, 100, 2]
     layers = [2, 100, 100, 100, 100, 2]
 
-    data = scipy.io.loadmat('C:\\Users\\fmend\\PycharmProjects\\pythonProject1\\Data\\rogue.mat')
+    data = scipy.io.loadmat('C:\\Users\\JELLYFISH\\OneDrive\\Documents\\Data\\Hirota E rogue.mat')
 
     t = data['t_values'].flatten()[:, None]
     x = data['x_values'].flatten()[:, None]
@@ -255,7 +255,7 @@ if __name__ == "__main__":
 
     start_time = time.time()
 
-    model.train(20)
+    model.train(2000)
 
     elapsed = time.time() - start_time
     print('Training time: %.4f' % (elapsed))
