@@ -216,8 +216,8 @@ if __name__ == "__main__":
     noise = 0.0
 
     # Domain bounds
-    lb = np.array([-2.5, -.5])
-    ub = np.array([2.5, .5])
+    lb = np.array([-2.5, 0])
+    ub = np.array([2.5, 1])
 
     N0 = 100
     N_b = 100
