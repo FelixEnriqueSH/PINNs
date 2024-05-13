@@ -167,7 +167,7 @@ class PhysicsInformedNN:
         v_xxx = tf.gradients(v_xx, x)[0]
 
         f_u = -v_t+alpha*(u_xx+2*(u**2+v**2)*u)-beta*(v_xxx+6*(u**2+v**2)*v_x)
-        f_v = u_t+alpha*(v_xx+2*(u**2+v**2)*v)+beta*(u_xxx+6*(u**2+v*2)*u_x)
+        f_v = u_t+alpha*(v_xx+2*(u**2+v**2)*v)+beta*(u_xxx+6*(u**2+v**2)*u_x)
 
         return f_u, f_v
 
