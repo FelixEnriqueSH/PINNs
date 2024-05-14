@@ -217,7 +217,7 @@ if __name__ == "__main__":
 
     # Domain bounds
     lb = np.array([-10, 0])
-    ub = np.array([10, 6])
+    ub = np.array([10, 3])
 
     N0 = 100
     N_b = 100
