@@ -102,7 +102,7 @@ class PhysicsInformedNN:
         # Optimizers using TensorFlow 2.x
         self.optimizer = dde.optimizers.tensorflow_compat_v1.scipy_optimizer.ScipyOptimizerInterface(
             self.loss, method='L-BFGS-B',
-            options={'maxiter': 500, 'maxfun': 500, 'maxcor': 50, 'maxls': 50, 'ftol': 1.0 * np.finfo(float).eps})
+            options={'maxiter': 5000, 'maxfun': 5000, 'maxcor': 50, 'maxls': 50, 'ftol': 1.0 * np.finfo(float).eps})
 
         #########################################################
         self.optimizer_Adam = tf.train.AdamOptimizer()
@@ -216,12 +216,12 @@ if __name__ == "__main__":
     noise = 0.0
 
     # Domain bounds
-    lb = np.array([-10, -3])
-    ub = np.array([10, 3])
+    lb = np.array([-10, 0])
+    ub = np.array([10, 6])
 
-    N0 = 50
-    N_b = 50
-    N_f = 20000
+    N0 = 100
+    N_b = 100
+    N_f = 10000
     #    layers = [2, 100, 2]
     layers = [2, 100, 100, 100, 100, 2]
 
@@ -255,7 +255,7 @@ if __name__ == "__main__":
 
     start_time = time.time()
 
-    model.train(200)
+    model.train(2000)
 
     elapsed = time.time() - start_time
     print('Training time: %.4f' % (elapsed))
@@ -295,6 +295,7 @@ if __name__ == "__main__":
         fig = plt.figure(figsize=(width, height))
         return fig, fig.gca()
 
+
     X0 = np.concatenate((x0, 0 * x0), 1)  # (x0, 0)
     X_lb = np.concatenate((0 * tb + lb[0], tb), 1)  # (lb[0], tb)
     X_ub = np.concatenate((0 * tb + ub[0], tb), 1)  # (ub[0], tb)
@@ -308,7 +309,7 @@ if __name__ == "__main__":
     gs0.update(top=1 - 0.06, bottom=1 - 1 / 3, left=0.15, right=0.85, wspace=0)
     ax = plt.subplot(gs0[:, :])
 
-    h = ax.imshow(H_pred.T, interpolation='nearest', cmap='YlGnBu',
+    h = ax.imshow(U_pred.T, interpolation='nearest', cmap='YlGnBu',
                   extent=[lb[1], ub[1], lb[0], ub[0]],
                   origin='lower', aspect='auto')
     divider = make_axes_locatable(ax)
@@ -319,9 +320,9 @@ if __name__ == "__main__":
             clip_on=False)
 
     line = np.linspace(x.min(), x.max(), 2)[:, None]
-    ax.plot(t[200] * np.ones((2, 1)), line, 'k--', linewidth=1)
-    ax.plot(t[250] * np.ones((2, 1)), line, 'k--', linewidth=1)
-    ax.plot(t[300] * np.ones((2, 1)), line, 'k--', linewidth=1)
+    ax.plot(t[25] * np.ones((2, 1)), line, 'k--', linewidth=1)
+    ax.plot(t[50] * np.ones((2, 1)), line, 'k--', linewidth=1)
+    ax.plot(t[75] * np.ones((2, 1)), line, 'k--', linewidth=1)
 
     ax.set_xlabel('$t$')
     ax.set_ylabel('$x$')
@@ -334,36 +335,36 @@ if __name__ == "__main__":
     gs1.update(top=1 - 1 / 3, bottom=0, left=0.1, right=0.9, wspace=0.5)
 
     ax = plt.subplot(gs1[0, 0])
-    ax.plot(x, Exact_h[:, 200], 'b-', linewidth=2, label='Exact')
-    ax.plot(x, H_pred[200, :], 'r--', linewidth=2, label='Prediction')
+    ax.plot(x, Exact_h[:, 25], 'b-', linewidth=2, label='Exact')
+    ax.plot(x, H_pred[25, :], 'r--', linewidth=2, label='Prediction')
     ax.set_xlabel('$x$')
     ax.set_ylabel('$|h(t,x)|$')
-    ax.set_title('$t = %.2f$' % (t[200, 0]), fontsize=10)
+    ax.set_title('$t = %.2f$' % (t[25, 0]), fontsize=10)
     ax.axis('square')
     ax.set_xlim([-10.1, 10.1])
     ax.set_ylim([-0.1, 5.1])
 
     ax = plt.subplot(gs1[0, 1])
-    ax.plot(x, Exact_h[:, 250], 'b-', linewidth=2, label='Exact')
-    ax.plot(x, H_pred[250, :], 'r--', linewidth=2, label='Prediction')
+    ax.plot(x, Exact_h[:, 50], 'b-', linewidth=2, label='Exact')
+    ax.plot(x, H_pred[50, :], 'r--', linewidth=2, label='Prediction')
     ax.set_xlabel('$x$')
     ax.set_ylabel('$|h(t,x)|$')
     ax.axis('square')
     ax.set_xlim([-10.1, 10.1])
     ax.set_ylim([-0.1, 5.1])
-    ax.set_title('$t = %.2f$' % (t[250, 0]), fontsize=10)
+    ax.set_title('$t = %.2f$' % (t[50, 0]), fontsize=10)
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.8), ncol=5, frameon=False)
 
     ax = plt.subplot(gs1[0, 2])
-    ax.plot(x, Exact_h[:, 300], 'b-', linewidth=2, label='Exact')
-    ax.plot(x, H_pred[300, :], 'r--', linewidth=2, label='Prediction')
+    ax.plot(x, Exact_h[:, 75], 'b-', linewidth=2, label='Exact')
+    ax.plot(x, H_pred[75, :], 'r--', linewidth=2, label='Prediction')
     ax.set_xlabel('$x$')
     ax.set_ylabel('$|h(t,x)|$')
     ax.axis('square')
 
     ax.set_xlim([-10.1, 10.1])
     ax.set_ylim([-0.1, 5.1])
-    ax.set_title('$t = %.2f$' % (t[300, 0]), fontsize=10)
+    ax.set_title('$t = %.2f$' % (t[75, 0]), fontsize=10)
     plt.savefig(f'grafica red neuronal.pdf', dpi=800, bbox_inches="tight")
 
 # Grafica los valores de pérdida
