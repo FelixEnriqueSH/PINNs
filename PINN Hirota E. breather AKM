@@ -225,7 +225,7 @@ if __name__ == "__main__":
     #    layers = [2, 100, 2]
     layers = [2, 100, 100, 100, 100, 2]
 
-    data = scipy.io.loadmat('C:\\Users\\JELLYFISH\\OneDrive\\Documents\\Data\\breather AKM.mat')
+    data = scipy.io.loadmat('C:\\Users\\JELLYFISH\\OneDrive\\Documents\\Data\\Hirota E breather AKM.mat')
 
     t = data['t_values'].flatten()[:, None]
     x = data['x_values'].flatten()[:, None]
