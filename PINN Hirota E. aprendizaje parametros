@@ -29,10 +29,6 @@ tf.set_random_seed(1234)
 
 print("GPU Available: ", tf.test.is_gpu_available())
 
-config = tf.compat.v1.ConfigProto()
-config.gpu_options.allow_growth = True
-session = tf.compat.v1.Session(config=config)
-
 alpha = tf.Variable(tf.random.normal(shape=(1,)), name="alpha")
 beta = tf.Variable(tf.random.normal(shape=(1,)), name="beta")
 
@@ -79,7 +75,7 @@ class PhysicsInformedNN:
         # Optimizers using TensorFlow 2.x
         self.optimizer = dde.optimizers.tensorflow_compat_v1.scipy_optimizer.ScipyOptimizerInterface(
             self.loss, method='L-BFGS-B',
-            options={'maxiter': 50, 'maxfun': 50, 'maxcor': 50, 'maxls': 50, 'ftol': 1.0 * np.finfo(float).eps})
+            options={'maxiter': 2000, 'maxfun': 2000, 'maxcor': 50, 'maxls': 50, 'ftol': 1.0 * np.finfo(float).eps})
 
         #########################################################
         self.optimizer_Adam = tf.train.AdamOptimizer()
@@ -144,7 +140,7 @@ class PhysicsInformedNN:
         v_xxx = tf.gradients(v_xx, x)[0]
 
         f_u = -v_t+alpha*(u_xx+2*(u**2+v**2)*u)-beta*(v_xxx+6*(u**2+v**2)*v_x)
-        f_v = u_t+alpha*(v_xx+2*(u**2+v**2)*v)+beta*(u_xxx+6*(u**2+v*2)*u_x)
+        f_v = u_t+alpha*(v_xx+2*(u**2+v**2)*v)+beta*(u_xxx+6*(u**2+v**2)*u_x)
 
         return f_u, f_v
     def callback(self, loss):
@@ -190,17 +186,17 @@ if __name__ == "__main__":
     lb = np.array([-10, 0.0])
     ub = np.array([10, 5])
 
-    N0 = 50
-    N_b = 50
-    N_f = 20000
+    N0 = 100
+    N_b = 100
+    N_f = 10000
     #    layers = [2, 100, 2]
     layers = [2, 100, 100, 100, 100, 2]
 
-    data = scipy.io.loadmat('C:\\Users\\JELLYFISH\\OneDrive\\Documents\\Data\\soliton brillante parametros.mat')
+    data = scipy.io.loadmat('C:\\Users\\JELLYFISH\\OneDrive\\Documents\\Data\\Hirota E soliton brillante parametros.mat')
 
-    t = data['t'].flatten()[:, None]
-    x = data['x'].flatten()[:, None]
-    Exact = data['q']
+    t = data['t_values'].flatten()[:, None]
+    x = data['x_values'].flatten()[:, None]
+    Exact = data['q_values']
     Exact_alpha = data['a']
     Exact_beta = data['b']
     Exact_u = np.real(Exact)
@@ -230,7 +226,7 @@ if __name__ == "__main__":
 
     start_time = time.time()
 
-    model.train(20)
+    model.train(1500)
 
     elapsed = time.time() - start_time
     print('Training time: %.4f' % (elapsed))
@@ -272,25 +268,81 @@ if __name__ == "__main__":
 ######################################################################
     ############################# Plotting ###############################
     ######################################################################
-plt.figure(figsize=(15, 5))
+    def newfig(width, height):
+        fig = plt.figure(figsize=(width, height))
+        return fig, fig.gca()
 
-plt.subplot(1, 2, 1)
-plt.pcolor(T, X, U_pred, cmap='jet')
-plt.colorbar(label='u')
-plt.xlabel('t')
-plt.ylabel('x')
-plt.title('Predicción de u')
 
-plt.subplot(1, 2, 2)
-u_star_reshaped = np.reshape(u_star, X.shape)
-plt.pcolor(T, X, u_star_reshaped, cmap='jet')
-plt.colorbar(label='u')
-plt.xlabel('t')
-plt.ylabel('x')
-plt.title('Solución exacta de u')
+    X0 = np.concatenate((x0, 0 * x0), 1)  # (x0, 0)
+    X_lb = np.concatenate((0 * tb + lb[0], tb), 1)  # (lb[0], tb)
+    X_ub = np.concatenate((0 * tb + ub[0], tb), 1)  # (ub[0], tb)
+    X_u_train = np.vstack([X0, X_lb, X_ub])
 
-plt.tight_layout()
-plt.savefig('prediccion_vs_exacta_u.pdf')
+    fig, ax = newfig(15.0, 12.0)
+    ax.axis('off')
+
+    ####### Row 0: h(t,x) ##################
+    gs0 = gridspec.GridSpec(1, 2)
+    gs0.update(top=1 - 0.06, bottom=1 - 1 / 3, left=0.15, right=0.85, wspace=0)
+    ax = plt.subplot(gs0[:, :])
+
+    h = ax.imshow(H_pred.T, interpolation='nearest', cmap='magma',
+                  extent=[lb[1], ub[1], lb[0], ub[0]],
+                  origin='lower', aspect='auto')
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="5%", pad=0.05)
+    fig.colorbar(h, cax=cax)
+
+    ax.plot(X_u_train[:, 1], X_u_train[:, 0], 'kx', label='Data (%d points)' % (X_u_train.shape[0]), markersize=4,
+            clip_on=False)
+
+    line = np.linspace(x.min(), x.max(), 2)[:, None]
+    ax.plot(t[25] * np.ones((2, 1)), line, 'k--', linewidth=1)
+    ax.plot(t[50] * np.ones((2, 1)), line, 'k--', linewidth=1)
+    ax.plot(t[75] * np.ones((2, 1)), line, 'k--', linewidth=1)
+
+    ax.set_xlabel('$t$')
+    ax.set_ylabel('$x$')
+    leg = ax.legend(frameon=False, loc='best')
+    #    plt.setp(leg.get_texts(), color='w')
+    ax.set_title('$|h(t,x)|$', fontsize=10)
+
+    ####### Row 1: h(t,x) slices ##################
+    gs1 = gridspec.GridSpec(1, 3)
+    gs1.update(top=1 - 1 / 3, bottom=0, left=0.1, right=0.9, wspace=0.5)
+
+    ax = plt.subplot(gs1[0, 0])
+    ax.plot(x, Exact_h[:, 25], 'b-', linewidth=2, label='Exact')
+    ax.plot(x, H_pred[25, :], 'r--', linewidth=2, label='Prediction')
+    ax.set_xlabel('$x$')
+    ax.set_ylabel('$|h(t,x)|$')
+    ax.set_title('$t = %.2f$' % (t[25, 0]), fontsize=10)
+    ax.axis('square')
+    ax.set_xlim([-10.1, 10.1])
+    ax.set_ylim([-0.1, 5.1])
+
+    ax = plt.subplot(gs1[0, 1])
+    ax.plot(x, Exact_h[:, 50], 'b-', linewidth=2, label='Exact')
+    ax.plot(x, H_pred[50, :], 'r--', linewidth=2, label='Prediction')
+    ax.set_xlabel('$x$')
+    ax.set_ylabel('$|h(t,x)|$')
+    ax.axis('square')
+    ax.set_xlim([-10.1, 10.1])
+    ax.set_ylim([-0.1, 5.1])
+    ax.set_title('$t = %.2f$' % (t[50, 0]), fontsize=10)
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.8), ncol=5, frameon=False)
+
+    ax = plt.subplot(gs1[0, 2])
+    ax.plot(x, Exact_h[:, 75], 'b-', linewidth=2, label='Exact')
+    ax.plot(x, H_pred[75, :], 'r--', linewidth=2, label='Prediction')
+    ax.set_xlabel('$x$')
+    ax.set_ylabel('$|h(t,x)|$')
+    ax.axis('square')
+
+    ax.set_xlim([-10, 10.1])
+    ax.set_ylim([-0.1, 5.1])
+    ax.set_title('$t = %.2f$' % (t[75, 0]), fontsize=10)
+    plt.savefig(f'grafica red neuronal.pdf', dpi=800, bbox_inches="tight")
 
 # Grafica los valores de pérdida
 plt.figure()
@@ -301,3 +353,4 @@ plt.title('Pérdida durante el entrenamiento')
 plt.ylim(0, .025)
 plt.grid(True)
 plt.savefig('errores_por_iteracion.pdf')
+
