@@ -92,7 +92,7 @@ class PhysicsInformedNN:
  # Optimizers using TensorFlow 2.x
         self.optimizer = dde.optimizers.tensorflow_compat_v1.scipy_optimizer.ScipyOptimizerInterface(
             self.loss, method='L-BFGS-B',
-            options={'maxiter': 5000, 'maxfun': 5000, 'maxcor': 50, 'maxls': 50, 'ftol': 1.0 * np.finfo(float).eps})
+            options={'maxiter': 500, 'maxfun': 500, 'maxcor': 50, 'maxls': 50, 'ftol': 1.0 * np.finfo(float).eps})
 
         #########################################################
         self.optimizer_Adam = tf.train.AdamOptimizer()
@@ -197,8 +197,8 @@ if __name__ == "__main__":
     noise = 0.0
 
     # Domain bounds
-    lb = np.array([-20, 0])
-    ub = np.array([20, .5])
+    lb = np.array([-15, 0])
+    ub = np.array([15, .1])
 
     N0 = 100
     N_b = 200
@@ -231,7 +231,7 @@ if __name__ == "__main__":
 
     start_time = time.time()
 
-    model.train(2000)
+    model.train(200)
 
     elapsed = time.time() - start_time
     print('Training time: %.4f' % (elapsed))
@@ -303,7 +303,7 @@ if __name__ == "__main__":
     ax.set_ylabel('$|u(t,x)|$')
     ax.set_title('$t = %.2f$' % (t[50, 0]), fontsize=10)
     ax.axis('square')
-    ax.set_xlim([-20.1, 20.1])
+    ax.set_xlim([-15.1, 15.1])
     ax.set_ylim([-0.1, 3.1])
 
     ax = plt.subplot(gs1[0, 1])
@@ -312,7 +312,7 @@ if __name__ == "__main__":
     ax.set_xlabel('$x$')
     ax.set_ylabel('$|u(t,x)|$')
     ax.axis('square')
-    ax.set_xlim([-20.1, 20.1])
+    ax.set_xlim([-15.1, 15.1])
     ax.set_ylim([-0.1, 3.1])
     ax.set_title('$t = %.2f$' % (t[100, 0]), fontsize=10)
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.8), ncol=5, frameon=False)
@@ -324,7 +324,7 @@ if __name__ == "__main__":
     ax.set_ylabel('$|h(t,x)|$')
     ax.axis('square')
 
-    ax.set_xlim([-20.1, 20.1])
+    ax.set_xlim([-15.1, 15.1])
     ax.set_ylim([-0.1, 3.1])
     ax.set_title('$t = %.2f$' % (t[150, 0]), fontsize=10)
     plt.savefig(f'grafica red neuronal.pdf', dpi=800, bbox_inches="tight")
